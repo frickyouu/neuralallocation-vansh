@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Report: Direct Sharpe Ratio Optimization via Deep Learning</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: The SPA is designed as a narrative journey, guiding the user from foundational concepts to advanced applications. A sticky top navigation allows non-linear exploration of thematic sections. The structure prioritizes understanding over mirroring the report's layout. It starts with a high-level comparison (MVO vs. ML), introduces the different ML paradigms, dives deep into the core 'Direct Optimization' model with an interactive visualization, addresses its 'Practical Challenges' in a digestible card format, compares it to 'Alternatives' with an interactive table, and finally explores 'Beyond Sharpe' with a tabbed interface for different risk metrics. This flow is designed to build knowledge progressively and make a dense topic accessible. -->
+    <!-- Visualization & Content Choices: The application uses a mix of static and interactive elements to achieve its goals. Goal: Compare -> HTML/CSS tables and grids (MVO vs ML, Alternatives). Goal: Organize -> HTML/CSS diagrams (ML Paradigms). Goal: Explain Process -> JS-animated diagram (Direct Optimization Flow). Goal: Demonstrate Concept -> Interactive Chart.js visualization (Unstable Gradient). Goal: Explore -> Interactive tabs (Risk Metrics). These choices avoid SVG/Mermaid as required, using Chart.js (Canvas) for all charting and HTML/CSS for diagrams. This multi-faceted approach ensures each piece of information is presented in the most effective format for user comprehension and engagement. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            color: #34495e;
+        }
+        .nav-link {
+            transition: color 0.3s ease, border-bottom-color 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #16a085;
+            border-bottom-color: #16a085;
+        }
+        .section-title {
+            border-bottom: 3px solid #16a085;
+            padding-bottom: 0.5rem;
+            display: inline-block;
+        }
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .tab.active {
+            border-color: #16a085;
+            background-color: #16a085;
+            color: white;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .flow-node {
+            transition: all 0.5s ease-in-out;
+        }
+        .flow-arrow {
+            transition: all 0.5s ease-in-out;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-[#2c3e50]">Portfolio Optimization</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#foundations" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Foundations</a>
+                        <a href="#paradigm" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">ML Paradigm</a>
+                        <a href="#deep-dive" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Deep Dive</a>
+                        <a href="#challenges" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Challenges</a>
+                        <a href="#alternatives" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Alternatives</a>
+                        <a href="#beyond-sharpe" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Beyond Sharpe</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+        <section id="hero" class="text-center mb-16 md:mb-24">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-[#2c3e50] tracking-tight mb-4">Direct Sharpe Ratio Optimization via Deep Learning</h1>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600">An interactive exploration of how machine learning, particularly neural networks, is revolutionizing the quest for the optimal investment portfolio by directly optimizing for financial objectives.</p>
+        </section>
+
+        <section id="foundations" class="mb-16 md:mb-24 scroll-mt-20">
+            <h2 class="section-title text-3xl font-bold mb-8">Foundations: The Old Guard vs. The New Wave</h2>
+             <p class="text-gray-600 mb-8 max-w-4xl">This section contrasts the classical, theory-driven approach to portfolio management with the modern, data-driven paradigm of machine learning. Understanding the limitations of the former is key to appreciating the potential of the latter. We compare Markowitz's Mean-Variance Optimization (MVO) against the core proposition of ML.</p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                    <h3 class="text-2xl font-semibold mb-4 text-[#2c3e50]">Classical: Mean-Variance Optimization (MVO)</h3>
+                    <p class="mb-4 text-gray-600">A prescriptive, model-based framework that seeks to maximize return for a given level of risk. It's elegant in theory but fragile in practice.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start"><span class="text-red-500 mr-3 mt-1">&#10007;</span><span><strong>High Sensitivity:</strong> Highly sensitive to estimation errors in inputs (mean returns, covariance). Small errors can lead to wildly different and unstable portfolios.</span></li>
+                        <li class="flex items-start"><span class="text-red-500 mr-3 mt-1">&#10007;</span><span><strong>Rigid Assumptions:</strong> Assumes asset returns are normally distributed and static over time, which is rarely true in real markets.</span></li>
+                        <li class="flex items-start"><span class="text-red-500 mr-3 mt-1">&#10007;</span><span><strong>Curse of Dimensionality:</strong> Becomes unstable and computationally difficult as the number of assets grows due to the need to invert a large covariance matrix.</span></li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md border-2 border-[#16a085]">
+                    <h3 class="text-2xl font-semibold mb-4 text-[#16a085]">Modern: Machine Learning Paradigm</h3>
+                    <p class="mb-4 text-gray-600">A descriptive, data-driven approach that learns complex, non-linear patterns directly from historical data without strong prior assumptions.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start"><span class="text-green-500 mr-3 mt-1">&#10003;</span><span><strong>Data-Driven:</strong> Learns relationships directly from data, adapting to complex market dynamics like non-linearity and regime shifts.</span></li>
+                        <li class="flex items-start"><span class="text-green-500 mr-3 mt-1">&#10003;</span><span><strong>Flexible:</strong> Does not assume normal distributions. Can model fat tails, skewness, and other real-world data characteristics.</span></li>
+                        <li class="flex items-start"><span class="text-green-500 mr-3 mt-1">&#10003;</span><span><strong>End-to-End Potential:</strong> Can directly map market data to portfolio weights, optimizing for the final investment objective rather than intermediate predictions.</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <section id="paradigm" class="mb-16 md:mb-24 scroll-mt-20">
+            <h2 class="section-title text-3xl font-bold mb-8">The ML Paradigm: A Spectrum of Approaches</h2>
+            <p class="text-gray-600 mb-8 max-w-4xl">Machine learning isn't a single method but a spectrum of approaches for portfolio construction. They primarily differ in how they couple the tasks of prediction and optimization. This section provides a high-level overview of the main strategies, from decoupled hybrid models to fully integrated, end-to-end systems.</p>
+            <div class="grid md:grid-cols-3 gap-8 text-center">
+                <div class="card bg-white p-6 rounded-lg border">
+                    <h3 class="text-xl font-semibold mb-2">1. Predict-then-Optimize</h3>
+                    <p class="text-gray-600 text-sm">A two-stage hybrid. An ML model first predicts returns/covariances. These predictions are then fed into a traditional optimizer (like MVO).</p>
+                    <div class="mt-4 text-xs font-mono text-gray-500">ML Model &#8594; Predictions &#8594; Optimizer &#8594; Weights</div>
+                </div>
+                <div class="card bg-white p-6 rounded-lg border-2 border-[#16a085]">
+                    <h3 class="text-xl font-semibold mb-2">2. End-to-End Optimization</h3>
+                    <p class="text-gray-600 text-sm">A single, integrated neural network maps market data directly to portfolio weights, trained by optimizing a financial objective (like Sharpe Ratio) as its loss function.</p>
+                    <div class="mt-4 text-xs font-mono text-gray-500">Data &#8594; [Neural Network] &#8594; Weights</div>
+                </div>
+                <div class="card bg-white p-6 rounded-lg border">
+                    <h3 class="text-xl font-semibold mb-2">3. Reinforcement Learning</h3>
+                    <p class="text-gray-600 text-sm">An 'agent' learns a policy to rebalance a portfolio over time by interacting with the market 'environment' to maximize a cumulative reward signal.</p>
+                    <div class="mt-4 text-xs font-mono text-gray-500">State &#8594; Agent &#8594; Action &#8594; Reward</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="deep-dive" class="mb-16 md:mb-24 scroll-mt-20">
+            <h2 class="section-title text-3xl font-bold mb-8">Deep Dive: How Direct Optimization Works</h2>
+             <p class="text-gray-600 mb-8 max-w-4xl">This section breaks down the core components of the end-to-end direct optimization model. We visualize the flow of data through the system and provide an interactive demonstration of a key challenge: the unstable gradient that arises from using the Sharpe Ratio as a loss function in a training batch.</p>
+            
+            <div class="bg-white p-6 rounded-lg shadow-md mb-12">
+                <h3 class="text-2xl font-semibold mb-4 text-center">End-to-End Model Flow</h3>
+                <div id="flow-diagram" class="space-y-4 md:space-y-0 md:flex md:items-center md:justify-around text-center">
+                    <div class="flow-node bg-blue-100 p-4 rounded-lg shadow">Input Data<br><span class="text-xs">(Price History)</span></div>
+                    <div class="flow-arrow text-2xl font-bold text-gray-400 mx-2">&#8594;</div>
+                    <div class="flow-node bg-purple-100 p-4 rounded-lg shadow">NN Architecture<br><span class="text-xs">(e.g., LSTM, TCN)</span></div>
+                    <div class="flow-arrow text-2xl font-bold text-gray-400 mx-2">&#8594;</div>
+                    <div class="flow-node bg-green-100 p-4 rounded-lg shadow">Output Weights<br><span class="text-xs">(via Softmax)</span></div>
+                    <div class="flow-arrow text-2xl font-bold text-gray-400 mx-2">&#8594;</div>
+                    <div class="flow-node bg-red-100 p-4 rounded-lg shadow">Loss Calculation<br><span class="text-xs">(-Sharpe Ratio)</span></div>
+                    <div class="flow-arrow text-2xl font-bold text-gray-400 mx-2 transform -scale-x-100 rotate-180">&#8634;</div>
+                    <div class="flow-node bg-yellow-100 p-4 rounded-lg shadow">Backpropagation<br><span class="text-xs">(Update Network)</span></div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-2xl font-semibold mb-2 text-center">Interactive Demo: The Unstable Gradient</h3>
+                <p class="text-center text-gray-600 mb-6">The Sharpe Ratio, when calculated on a small "mini-batch" of data during training, can be very volatile. This creates a noisy, unstable gradient signal for the model to learn from. Click the buttons to simulate different data batches and see how the resulting Sharpe Ratio (the model's "loss") fluctuates.</p>
+                <div class="chart-container">
+                    <canvas id="sharpeDemoChart"></canvas>
+                </div>
+                <div class="text-center mt-4">
+                    <button id="stable-batch-btn" class="bg-[#16a085] text-white px-4 py-2 rounded-md hover:bg-[#1abc9c] transition">Simulate Stable Batch</button>
+                    <button id="volatile-batch-btn" class="bg-[#e74c3c] text-white px-4 py-2 rounded-md hover:bg-[#c0392b] transition ml-4">Simulate Volatile Batch</button>
+                </div>
+                <div id="sharpe-output" class="text-center mt-4 font-mono text-lg p-3 bg-gray-100 rounded-md">Batch Sharpe Ratio: <span id="sharpe-value" class="font-bold">1.58</span></div>
+            </div>
+        </section>
+
+        <section id="challenges" class="mb-16 md:mb-24 scroll-mt-20">
+            <h2 class="section-title text-3xl font-bold mb-8">Practical Challenges & Mitigation Strategies</h2>
+            <p class="text-gray-600 mb-8 max-w-4xl">Theory is one thing; practice is another. Applying these models to real, noisy financial data presents significant hurdles. This section outlines the most common challenges and the standard techniques used by practitioners to overcome them, ensuring models are robust and reliable.</p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="card bg-white p-6 rounded-lg border">
+                    <h3 class="text-xl font-semibold mb-2">Overfitting</h3>
+                    <p class="text-gray-600 mb-3">The model learns noise and spurious correlations from the training data, failing on new, out-of-sample data.</p>
+                    <strong class="text-sm text-[#16a085]">Solutions:</strong>
+                    <ul class="mt-2 text-sm space-y-1 list-disc list-inside">
+                        <li>L1/L2 Regularization</li>
+                        <li>Dropout</li>
+                        <li>Walk-Forward Validation</li>
+                        <li>Ensemble Methods</li>
+                    </ul>
+                </div>
+                <div class="card bg-white p-6 rounded-lg border">
+                    <h3 class="text-xl font-semibold mb-2">Unstable Gradients</h3>
+                    <p class="text-gray-600 mb-3">Noisy batch statistics create a volatile loss signal, hindering model convergence during training.</p>
+                    <strong class="text-sm text-[#16a085]">Solutions:</strong>
+                    <ul class="mt-2 text-sm space-y-1 list-disc list-inside">
+                        <li>Gradient Clipping</li>
+                        <li>Learning Rate Schedules</li>
+                        <li>Larger Batch Sizes</li>
+                        <li>Loss Function Smoothing</li>
+                    </ul>
+                </div>
+                <div class="card bg-white p-6 rounded-lg border">
+                    <h3 class="text-xl font-semibold mb-2">Transaction Costs</h3>
+                    <p class="text-gray-600 mb-3">A model that appears profitable in simulation can be worthless after real-world trading costs are included.</p>
+                    <strong class="text-sm text-[#16a085]">Solutions:</strong>
+                    <ul class="mt-2 text-sm space-y-1 list-disc list-inside">
+                        <li>Add a cost penalty term directly into the loss function to discourage high portfolio turnover.</li>
+                    </ul>
+                </div>
+                 <div class="card bg-white p-6 rounded-lg border">
+                    <h3 class="text-xl font-semibold mb-2">Data Leakage</h3>
+                    <p class="text-gray-600 mb-3">Accidentally using future information in training, leading to unrealistically good backtest results.</p>
+                    <strong class="text-sm text-[#16a085]">Solutions:</strong>
+                    <ul class="mt-2 text-sm space-y-1 list-disc list-inside">
+                        <li>Meticulous timestamp handling</li>
+                        <li>Avoiding survivorship bias</li>
+                        <li>Correct out-of-sample data processing</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="alternatives" class="mb-16 md:mb-24 scroll-mt-20">
+            <h2 class="section-title text-3xl font-bold mb-8">Alternatives: A Comparative Analysis</h2>
+            <p class="text-gray-600 mb-8 max-w-4xl">Direct optimization is not the only ML approach. To make an informed decision, it's crucial to understand the trade-offs between different methodologies. This table provides a structured comparison across key dimensions. Click on a column header to highlight and focus on a specific approach.</p>
+            <div class="w-full overflow-x-auto">
+                <table id="comparison-table" class="min-w-full bg-white shadow-md rounded-lg">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="p-3 text-left text-sm font-semibold text-gray-600">Feature</th>
+                            <th class="p-3 text-left text-sm font-semibold text-gray-600 cursor-pointer hover:bg-gray-200" data-col="1">Markowitz MVO</th>
+                            <th class="p-3 text-left text-sm font-semibold text-gray-600 cursor-pointer hover:bg-gray-200" data-col="2">Predict-then-Optimize</th>
+                            <th class="p-3 text-left text-sm font-semibold text-gray-600 cursor-pointer hover:bg-gray-200" data-col="3">Direct NN Optimization</th>
+                            <th class="p-3 text-left text-sm font-semibold text-gray-600 cursor-pointer hover:bg-gray-200" data-col="4">Reinforcement Learning</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b">
+                            <td class="p-3 font-medium">Core Principle</td>
+                            <td data-col="1">Statistical Optimization</td>
+                            <td data-col="2">Hybrid Forecasting & Opt.</td>
+                            <td data-col="3">End-to-End Learning</td>
+                            <td data-col="4">Sequential Decision-Making</td>
+                        </tr>
+                        <tr class="border-b bg-gray-50">
+                            <td class="p-3 font-medium">Interpretability</td>
+                            <td data-col="1">High</td>
+                            <td data-col="2">Moderate</td>
+                            <td data-col="3">Very Low ("Black Box")</td>
+                            <td data-col="4">Low</td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="p-3 font-medium">Key Challenges</td>
+                            <td data-col="1">Input Sensitivity</td>
+                            <td data-col="2">Mismatch between Tasks</td>
+                            <td data-col="3">Non-Convexity, Overfitting</td>
+                            <td data-col="4">Reward Design, Sample Use</td>
+                        </tr>
+                         <tr class="bg-gray-50">
+                            <td class="p-3 font-medium">Computational Cost</td>
+                            <td data-col="1">Low</td>
+                            <td data-col="2">Moderate-High</td>
+                            <td data-col="3">High (Training)</td>
+                            <td data-col="4">Very High (Training)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="beyond-sharpe" class="scroll-mt-20">
+            <h2 class="section-title text-3xl font-bold mb-8">Beyond Sharpe: Advanced Risk-Adjusted Loss Functions</h2>
+            <p class="text-gray-600 mb-8 max-w-4xl">The Sharpe ratio is not the only way to measure risk-adjusted return, and its reliance on standard deviation has drawbacks. This section explores more sophisticated metrics that can be used as loss functions to train models with more nuanced risk preferences, such as focusing only on downside risk or protecting against catastrophic tail events.</p>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="mb-6 border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-4" aria-label="Tabs">
+                        <button class="tab active whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm" data-tab="sharpe">Sharpe Ratio</button>
+                        <button class="tab whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="sortino">Sortino Ratio</button>
+                        <button class="tab whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="cvar">CVaR (Expected Shortfall)</button>
+                    </nav>
+                </div>
+                <div id="tab-content">
+                    <div id="sharpe-content">
+                         <h3 class="text-xl font-semibold mb-2">Objective: Maximize return per unit of total risk.</h3>
+                         <p class="text-gray-600 mb-4">Penalizes all volatility, both upside and downside, equally. It's the industry standard but may not align with investor preferences, as upside surprises are generally welcome.</p>
+                         <div class="chart-container">
+                            <canvas id="riskChartSharpe"></canvas>
+                        </div>
+                    </div>
+                    <div id="sortino-content" class="hidden">
+                        <h3 class="text-xl font-semibold mb-2">Objective: Maximize return per unit of "bad" risk.</h3>
+                        <p class="text-gray-600 mb-4">Only penalizes downside volatility—returns that fall below a minimum acceptable return. This better reflects an investor's typical view of risk.</p>
+                        <div class="chart-container">
+                            <canvas id="riskChartSortino"></canvas>
+                        </div>
+                    </div>
+                    <div id="cvar-content" class="hidden">
+                        <h3 class="text-xl font-semibold mb-2">Objective: Minimize the average loss in the worst-case scenarios.</h3>
+                        <p class="text-gray-600 mb-4">Focuses on quantifying and minimizing the risk of rare but catastrophic "tail events" or black swans. It answers the question: "If things go very wrong, how bad could it be?"</p>
+                         <div class="chart-container">
+                            <canvas id="riskChartCvar"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white mt-16 border-t">
+        <div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-gray-500">
+            <p>Interactive Report generated from "Direct Sharpe Ratio Optimization via Deep Learning: A Comprehensive Analysis".</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.3
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            const flowNodes = document.querySelectorAll('.flow-node');
+            const flowArrows = document.querySelectorAll('.flow-arrow');
+            let flowIndex = 0;
+            function animateFlow() {
+                if(flowIndex < flowNodes.length) {
+                    flowNodes[flowIndex].style.transform = 'scale(1.05)';
+                    flowNodes[flowIndex].style.borderColor = '#16a085';
+                }
+                if(flowIndex > 0 && flowIndex <= flowArrows.length) {
+                    flowArrows[flowIndex-1].style.opacity = '1';
+                    flowArrows[flowIndex-1].style.color = '#16a085';
+                }
+                if (flowIndex > 0 && (flowIndex - 1) < flowNodes.length) {
+                     flowNodes[flowIndex-1].style.transform = 'scale(1)';
+                }
+                flowIndex++;
+                if (flowIndex > flowNodes.length + flowArrows.length) {
+                    flowIndex = 0;
+                     flowNodes.forEach(n => n.style.transform = 'scale(1)');
+                     flowArrows.forEach(a => {
+                         a.style.opacity = '0';
+                         a.style.color = '#9ca3af';
+                     });
+                }
+            }
+            setInterval(animateFlow, 1000);
+
+
+            const chartData = {
+                stable: {
+                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+                    returns: [0.5, 0.6, 0.4, 0.7, 0.5, 0.8, 0.6],
+                    sharpe: 1.58
+                },
+                volatile: {
+                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+                    returns: [2.5, -2.0, 1.5, -1.0, 3.0, -2.5, 0.5],
+                    sharpe: 0.15
+                }
+            };
+            
+            const sharpeValueEl = document.getElementById('sharpe-value');
+            const ctx = document.getElementById('sharpeDemoChart').getContext('2d');
+            let sharpeChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartData.stable.labels,
+                    datasets: [{
+                        label: 'Daily Portfolio Return (%)',
+                        data: chartData.stable.returns,
+                        backgroundColor: '#16a085',
+                        borderColor: '#1abc9c',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Return (%)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Return: ${context.raw.toFixed(2)}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            function updateSharpeChart(type) {
+                sharpeChart.data.labels = chartData[type].labels;
+                sharpeChart.data.datasets[0].data = chartData[type].returns;
+                sharpeChart.data.datasets[0].backgroundColor = type === 'stable' ? '#16a085' : '#e74c3c';
+                sharpeChart.data.datasets[0].borderColor = type === 'stable' ? '#1abc9c' : '#c0392b';
+                sharpeChart.update();
+                sharpeValueEl.textContent = chartData[type].sharpe.toFixed(2);
+            }
+
+            document.getElementById('stable-batch-btn').addEventListener('click', () => updateSharpeChart('stable'));
+            document.getElementById('volatile-batch-btn').addEventListener('click', () => updateSharpeChart('volatile'));
+
+            const comparisonTable = document.getElementById('comparison-table');
+            comparisonTable.addEventListener('click', (e) => {
+                if (e.target.tagName === 'TH') {
+                    const colIndex = e.target.dataset.col;
+                    if (!colIndex) return;
+
+                    const allCells = comparisonTable.querySelectorAll('td, th');
+                    allCells.forEach(cell => cell.classList.remove('bg-green-100'));
+
+                    const cellsToHighlight = comparisonTable.querySelectorAll(`[data-col="${colIndex}"]`);
+                    cellsToHighlight.forEach(cell => cell.classList.add('bg-green-100'));
+                }
+            });
+
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('#tab-content > div');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    const targetId = tab.dataset.tab + '-content';
+                    tabContents.forEach(content => {
+                        if (content.id === targetId) {
+                            content.classList.remove('hidden');
+                        } else {
+                            content.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+
+            const riskReturnData = [-1.5, -2.8, -0.5, 0.3, 0.5, 0.7, 0.8, 1.1, 1.3, 1.9, 2.5, 4.0];
+            const riskLabels = riskReturnData.map((_, i) => `T${i+1}`);
+            
+            function createRiskChart(canvasId, riskType) {
+                const ctx = document.getElementById(canvasId).getContext('2d');
+                const MAR = 0;
+                const VaR_alpha = 0.25; 
+                const VaR_index = Math.floor(riskReturnData.length * VaR_alpha) - 1;
+                const sortedReturns = [...riskReturnData].sort((a,b) => a - b);
+                const VaR_value = sortedReturns[VaR_index];
+                
+                const backgroundColors = riskReturnData.map(r => {
+                     switch(riskType) {
+                        case 'sharpe':
+                            return Math.abs(r) > 1 ? 'rgba(231, 76, 60, 0.6)' : 'rgba(22, 160, 133, 0.6)';
+                        case 'sortino':
+                             return r < MAR ? 'rgba(231, 76, 60, 0.6)' : 'rgba(22, 160, 133, 0.2)';
+                        case 'cvar':
+                            return r <= VaR_value ? 'rgba(192, 57, 43, 1.0)' : 'rgba(22, 160, 133, 0.2)';
+                        default:
+                            return 'rgba(22, 160, 133, 0.6)';
+                    }
+                });
+
+                let chartTitle = '';
+                 switch(riskType) {
+                    case 'sharpe': chartTitle = 'Risk = All Volatility (Upside and Downside)'; break;
+                    case 'sortino': chartTitle = 'Risk = Downside Volatility (Returns < 0)'; break;
+                    case 'cvar': chartTitle = `Risk = Avg. Loss in Worst 25% of Cases (Returns <= ${VaR_value}%)`; break;
+                }
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: riskLabels,
+                        datasets: [{
+                            label: 'Period Return (%)',
+                            data: riskReturnData,
+                            backgroundColor: backgroundColors,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: chartTitle,
+                                font: { size: 16 }
+                            },
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                title: { display: true, text: 'Return (%)' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            createRiskChart('riskChartSharpe', 'sharpe');
+            createRiskChart('riskChartSortino', 'sortino');
+            createRiskChart('riskChartCvar', 'cvar');
+
+        });
+    </script>
+</body>
+</html>
